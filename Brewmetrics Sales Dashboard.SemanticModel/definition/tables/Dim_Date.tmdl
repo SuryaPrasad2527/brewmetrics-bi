@@ -1,0 +1,72 @@
+table Dim_Date
+	lineageTag: 9f48cdf4-88a2-4b04-a03f-aac1e1f4c71f
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 31c43dcb-89a5-4cbe-bb04-9845a6342462
+		summarizeBy: none
+		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: f0778ce9-0fcc-4db5-ae46-e660f6b73b22
+			defaultHierarchy: LocalDateTable_ceeda257-6e69-4faf-920a-c74e54ed4caf.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: c297078c-68bc-42bf-b75c-cc75c995b41a
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a9b6e99-7894-4dca-8382-0d9b52e04e59
+		summarizeBy: sum
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: 74dab639-2996-4488-ba57-e9d44f234298
+		summarizeBy: none
+		sourceColumn: Month Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		dataType: int64
+		formatString: 0
+		lineageTag: 7759df79-d762-4b23-bed1-b6c2ea92ebf1
+		summarizeBy: sum
+		sourceColumn: Day
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Date = m
+		mode: import
+		source =
+				let
+				    Source = Fact_Sales,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"date"}),
+				    #"Inserted Year" = Table.AddColumn(#"Removed Other Columns", "Year", each Date.Year([date]), Int64.Type),
+				    #"Inserted Month" = Table.AddColumn(#"Inserted Year", "Month", each Date.Month([date]), Int64.Type),
+				    #"Inserted Month Name" = Table.AddColumn(#"Inserted Month", "Month Name", each Date.MonthName([date]), type text),
+				    #"Inserted Day" = Table.AddColumn(#"Inserted Month Name", "Day", each Date.Day([date]), Int64.Type),
+				    #"Removed Duplicates" = Table.Distinct(#"Inserted Day", {"date"})
+				in
+				    #"Removed Duplicates"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
